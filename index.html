@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boodschappen Vergelijken</title>
+<style>
+:root {
+  --green: #315c45;
+  --light: #edf3ed;
+  --cream: #faf9f5;
+  --text: #252b27;
+  --muted: #788078;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--cream);
+  color: var(--text);
+}
+header {
+  background: white;
+  padding: 20px 6%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e8e8e2;
+}
+.logo { font-size: 21px; font-weight: 700; color: var(--green); }
+header span { color: var(--muted); font-size: 13px; }
+main { max-width: 1100px; margin: auto; padding: 28px 18px; }
+h1 { font-size: 27px; margin-bottom: 8px; }
+.subtitle { color: var(--muted); margin-top: 0; }
+.search {
+  width: 100%; padding: 15px; border: 1px solid #ddd;
+  border-radius: 10px; font-size: 16px; margin: 18px 0;
+}
+nav {
+  display: flex; gap: 8px; overflow-x: auto; margin: 20px 0;
+}
+nav button {
+  border: 0; padding: 11px 16px; border-radius: 20px;
+  background: #e9ece7; cursor: pointer; white-space: nowrap;
+}
+nav button.active { background: var(--green); color: white; }
+.notice {
+  background: #fff5dc; padding: 12px 15px;
+  border-radius: 8px; font-size: 13px; margin-bottom: 20px;
+}
+.layout {
+  display: grid; grid-template-columns: 1fr 300px; gap: 22px;
+}
+.products {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+}
+.product, .basket {
+  background: white; border: 1px solid #e9e9e3;
+  border-radius: 12px; padding: 16px;
+}
+.product h3 { margin: 8px 0; font-size: 16px; }
+.product p { color: var(--muted); font-size: 13px; }
+.product button {
+  background: var(--green); color: white; border: 0;
+  border-radius: 7px; padding: 10px 13px; cursor: pointer;
+}
+.emoji { font-size: 27px; }
+.basket { align-self: start; }
+.basket h2 { margin-top: 0; font-size: 19px; }
+.basket-item {
+  display: flex; justify-content: space-between;
+  gap: 8px; border-bottom: 1px solid #eee;
+  padding: 10px 0; font-size: 14px;
+}
+.basket-item button {
+  border: 0; background: none; color: #a44; cursor: pointer;
+}
+.total { font-weight: bold; margin-top: 18px; }
+.empty { color: var(--muted); font-size: 14px; }
+footer { text-align: center; color: var(--muted); padding: 30px; font-size: 12px; }
+@media(max-width: 700px) {
+  .layout { grid-template-columns: 1fr; }
+  .products { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width: 380px) {
+  .products { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Boodschappen</div>
+  <span>Vrij kiezen. Slim vergelijken.</span>
+</header>
+
+<main>
+  <h1>Wat heb je nodig?</h1>
+  <p class="subtitle">Zoek producten en bouw je eigen boodschappenmandje.</p>
+
+  <input id="search" class="search"
+    placeholder="Zoek bijvoorbeeld melk, appels of rijst...">
+
+  <nav id="categories">
+    <button class="active" data-category="Alles">Alles</button>
+    <button data-category="Groente">Groente</button>
+    <button data-category="Fruit">Fruit</button>
+    <button data-category="Vlees & vis">Vlees & vis</button>
+    <button data-category="Zuivel">Zuivel</button>
+    <button data-category="Overig">Overig</button>
+  </nav>
+
+  <div class="notice">
+    DEMO — Producten en prijzen zijn voorbeelden, geen actuele winkelprijzen.
+  </div>
+
+  <div class="layout">
+    <section>
+      <div class="products" id="products"></div>
+    </section>
+
+    <aside class="basket">
+      <h2>Mijn mandje</h2>
+      <div id="basketItems" class="empty">
+        Je mandje is nog leeg.
+      </div>
+      <div class="total" id="total">Totaal: —</div>
+    </aside>
+  </div>
+</main>
+
+<footer>
+  Geen account nodig. Jij bepaalt wat je koopt.
+</footer>
+
+<script>
+const products = [
+  {id:1, name:"Broccoli", category:"Groente", icon:"🥦", unit:"per stuk"},
+  {id:2, name:"Wortelen", category:"Groente", icon:"🥕", unit:"per kilo"},
+  {id:3, name:"Spinazie", category:"Groente", icon:"🥬", unit:"per zak"},
+  {id:4, name:"Appels", category:"Fruit", icon:"🍎", unit:"per kilo"},
+  {id:5, name:"Bananen", category:"Fruit", icon:"🍌", unit:"per kilo"},
+  {id:6, name:"Sinaasappels", category:"Fruit", icon:"🍊", unit:"per kilo"},
+  {id:7, name:"Rundergehakt", category:"Vlees & vis", icon:"🥩", unit:"per verpakking"},
+  {id:8, name:"Kipfilet", category:"Vlees & vis", icon:"🍗", unit:"per verpakking"},
+  {id:9, name:"Zalm", category:"Vlees & vis", icon:"🐟", unit:"per verpakking"},
+  {id:10, name:"Eieren", category:"Zuivel", icon:"🥚", unit:"per doos"},
+  {id:11, name:"Melk", category:"Zuivel", icon:"🥛", unit:"per liter"},
+  {id:12, name:"Havermout", category:"Overig", icon:"🌾", unit:"per verpakking"}
+];
+
+let selectedCategory = "Alles";
+let basket = [];
+
+function renderProducts() {
+  const query = document.getElementById("search").value.toLowerCase();
+  const filtered = products.filter(p =>
+    (selectedCategory === "Alles" || p.category === selectedCategory) &&
+    p.name.toLowerCase().includes(query)
+  );
+
+  document.getElementById("products").innerHTML =
+    filtered.map(p => `
+      <article class="product">
+        <div class="emoji">${p.icon}</div>
+        <h3>${p.name}</h3>
+        <p>${p.category} · ${p.unit}</p>
+        <button onclick="addToBasket(${p.id})">Toevoegen</button>
+      </article>
+    `).join("") || "<p>Geen producten gevonden.</p>";
+}
+
+function addToBasket(id) {
+  const existing = basket.find(item => item.id === id);
+  if (existing) existing.quantity++;
+  else basket.push({id, quantity:1});
+  renderBasket();
+}
+
+function removeFromBasket(id) {
+  basket = basket.filter(item => item.id !== id);
+  renderBasket();
+}
+
+function renderBasket() {
+  const container = document.getElementById("basketItems");
+
+  if (!basket.length) {
+    container.className = "empty";
+    container.textContent = "Je mandje is nog leeg.";
+    document.getElementById("total").textContent = "Totaal: —";
+    return;
+  }
+
+  container.className = "";
+  container.innerHTML = basket.map(item => {
+    const product = products.find(p => p.id === item.id);
+    return `
+      <div class="basket-item">
+        <span>${product.name} × ${item.quantity}</span>
+        <button onclick="removeFromBasket(${item.id})">Verwijderen</button>
+      </div>`;
+  }).join("");
+
+  document.getElementById("total").textContent =
+    basket.reduce((sum, item) => sum + item.quantity, 0) +
+    " producten · prijzen nog niet gekoppeld";
+}
+
+document.getElementById("search").addEventListener("input", renderProducts);
+
+document.getElementById("categories").addEventListener("click", event => {
+  if (event.target.tagName !== "BUTTON") return;
+  selectedCategory = event.target.dataset.category;
+  document.querySelectorAll("nav button").forEach(button =>
+    button.classList.toggle("active", button === event.target)
+  );
+  renderProducts();
+});
+
+renderProducts();
+</script>
+</body>
+</html>
